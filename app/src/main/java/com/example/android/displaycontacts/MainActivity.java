@@ -1,132 +1,159 @@
 package com.example.android.displaycontacts;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.provider.ContactsContract;
+import android.net.Uri;
+import android.provider.CallLog;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.accessibility.AccessibilityManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
-    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
-    private Button loadContacts;
-    private TextView listContacts;
-    // ---------->
-    int permissionCheck;
+import io.realm.Realm;
+import io.realm.RealmResults;
+
+public class MainActivity extends AppCompatActivity {
+    Realm realm;
+    RecyclerView recyclerView;
+    RecyclerViewAdapter adapter;
+    List<Contact> contactList;
+    FloatingActionButton call_log, add_contact;
+    private int MY_PERMISSIONS_REQUEST_MAKE_CALL = 1;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        RealmResults<Contact> lists = realm.where(Contact.class).findAll();
+        contactList = realm.copyFromRealm(lists);
+        adapter = new RecyclerViewAdapter(contactList, new RecyclerViewAdapter.ClickListener() {
+            @Override
+            public void onClick(int position) {
+                Intent intent = new Intent(Intent.ACTION_CALL);
+
+                intent.setData(Uri.parse("tel:" + contactList.get(position).getPhoneNumber()));
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(MainActivity.this,
+                            Manifest.permission.READ_CONTACTS)
+                            != PackageManager.PERMISSION_GRANTED) {
+
+                        // Should we show an explanation?
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                                Manifest.permission.READ_CONTACTS)) {
+
+                            // Show an explanation to the user *asynchronously* -- don't block
+                            // this thread waiting for the user's response! After the user
+                            // sees the explanation, try again to request the permission.
+
+                        } else {
+
+                            // No explanation needed, we can request the permission.
+
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.READ_CONTACTS},
+                                    MY_PERMISSIONS_REQUEST_MAKE_CALL);
+
+                            // MY_PERMISSIONS_REQUEST_READ_CALL_LOGS is an
+                            // app-defined int constant. The callback method gets the
+                            // result of the request.
+                        }
+                    } else {
+                        startActivity(intent);
+                    /*<<<<<<=======*/
+                    }
+                } else {
+                    startActivity(intent);
+                }
+
+            }
+        });
+        recyclerView.setAdapter(adapter);
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        listContacts = (TextView)findViewById(R.id.listContacts);
-        loadContacts = (Button)findViewById(R.id.loadContacts);
-        permissionCheck = ContextCompat.checkSelfPermission(MainActivity.this,
-                Manifest.permission.READ_CONTACTS);
-        loadContacts.setOnClickListener(new View.OnClickListener() {
+        setContentView(R.layout.activity_main2);
+        Realm.init(this);
+        realm = Realm.getDefaultInstance();
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
+        recyclerView.addItemDecoration(dividerItemDecoration);
+        RealmResults<Contact> lists = realm.where(Contact.class).findAll();
+        contactList = realm.copyFromRealm(lists);
+        adapter = new RecyclerViewAdapter(contactList, new RecyclerViewAdapter.ClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(int position) {
+                Intent intent = new Intent(Intent.ACTION_CALL);
 
+                intent.setData(Uri.parse("tel:" + contactList.get(position).getPhoneNumber()));
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(MainActivity.this,
+                            Manifest.permission.READ_CONTACTS)
+                            != PackageManager.PERMISSION_GRANTED) {
 
-    /* =====>>>> run time permission */            if (ContextCompat.checkSelfPermission(MainActivity.this,
-                        Manifest.permission.READ_CONTACTS)
-                        != PackageManager.PERMISSION_GRANTED) {
+                        // Should we show an explanation?
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                                Manifest.permission.READ_CONTACTS)) {
 
-                    // Should we show an explanation?
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
-                            Manifest.permission.READ_CONTACTS)) {
+                            // Show an explanation to the user *asynchronously* -- don't block
+                            // this thread waiting for the user's response! After the user
+                            // sees the explanation, try again to request the permission.
 
-                        // Show an explanation to the user *asynchronously* -- don't block
-                        // this thread waiting for the user's response! After the user
-                        // sees the explanation, try again to request the permission.
+                        } else {
 
+                            // No explanation needed, we can request the permission.
+
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.READ_CONTACTS},
+                                    MY_PERMISSIONS_REQUEST_MAKE_CALL);
+
+                            // MY_PERMISSIONS_REQUEST_READ_CALL_LOGS is an
+                            // app-defined int constant. The callback method gets the
+                            // result of the request.
+                        }
                     } else {
-
-                        // No explanation needed, we can request the permission.
-
-                        ActivityCompat.requestPermissions(MainActivity.this,
-                                new String[]{Manifest.permission.READ_CONTACTS},
-                                MY_PERMISSIONS_REQUEST_READ_CONTACTS);
-
-                        // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                        // app-defined int constant. The callback method gets the
-                        // result of the request.
+                        startActivity(intent);
+                    /*<<<<<<=======*/
                     }
-                }                                            /*<<<<<<=======*/
-                loadContacts();
+                } else {
+                    startActivity(intent);
+                }
+
             }
         });
-
-    }
-    // Run time dialog box and user approval----->>>
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadContacts();
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-                } else {
-                        Toast.makeText(MainActivity.this,"Contacts Permission is needed to Access Contacts",Toast.LENGTH_LONG).show();
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-
-                return ;
+        adapter.notifyDataSetChanged();
+        recyclerView.setAdapter(adapter);
+        call_log = (FloatingActionButton) findViewById(R.id.call_log);
+        call_log.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, CallLogs.class));
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
-// <<<<=====
-    private void loadContacts()
-    {
-    Toast.makeText(MainActivity.this,"Contacts Loading...",Toast.LENGTH_LONG).show();
-        StringBuilder builder = new StringBuilder();
-        ContentResolver contentResolver = getContentResolver();
-        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI,null,null,null,null);
-
-
-        if(cursor.getCount()>0) {
-            while (cursor.moveToNext()) {
-                String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                int hasPhoneNumber = Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)));
-
-
-                if (hasPhoneNumber > 0) {
-                    Cursor cursor2 = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                             null, ContactsContract.CommonDataKinds.Phone.CONTACT_ID + "=?",
-                            new String[]{id}, null);
-                    cursor2.moveToFirst();
-                    while(cursor2.isAfterLast() == false) {
-                            String phoneNumber = cursor2.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                            builder.append("Contact :").append(name).append(",phone number :").append(phoneNumber).append("\n\n");
-                        cursor2.moveToNext();
-
-                    }
-                    cursor2.close();
-                }
-
+        });
+        add_contact = (FloatingActionButton) findViewById(R.id.contact_add);
+        add_contact.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, ContactSelect.class));
             }
-        }
-        cursor.close();
-
-        listContacts.setText(builder.toString());
+        });
     }
+
+
+    //
 }

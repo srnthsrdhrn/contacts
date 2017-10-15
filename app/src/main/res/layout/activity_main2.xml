@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.android.displaycontacts.MainActivity">
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/recyclerView" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/contact_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/recyclerView"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="14dp"
+        android:src="@drawable/ic_call_end_black_24dp"
+        tools:layout_editor_absoluteX="328dp"
+        tools:layout_editor_absoluteY="465dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/call_log"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/contact_add"
+        android:layout_alignStart="@+id/contact_add"
+        android:layout_marginBottom="13dp"
+        android:src="@drawable/ic_import_contacts_black_24dp"
+        tools:layout_editor_absoluteX="328dp"
+        tools:layout_editor_absoluteY="465dp" />
+</RelativeLayout>
